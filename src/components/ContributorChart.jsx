@@ -13,47 +13,30 @@ const ContributorChart = ({ repository, activityType }) => {
             let url = `https://api.github.com/repos/${repository?.full_name}/stats/contributors`;
             const response = await axios.get(url);
 
-            if (response?.data && response?.data.length > 0) {
-                if (activityType == 'commit') {
-                    var series = [];
-                    response.data.forEach(function (item) {
-                        var dates = item.weeks.map(data => new Date(data.w * 1000));
-                        var commits = item.weeks.map(data => data.c);
-                        var author = item.author.login;
-                        series.push({
-                            contributor: author,
-                            data: commits,
-                            dates: dates
-                        });
+            if (response?.data && response?.data?.length > 0) {
+                var series = [];
+
+                response.data.forEach(function (item) {
+                    var dates = item.weeks.map(data => new Date(data.w * 1000));
+                    var author = item.author.login;
+                    var data;
+
+                    if (activityType == 'commit') {
+                        data = item.weeks.map(data => data.c);
+                    } else if (activityType == 'addition') {
+                        data = item.weeks.map(data => data.a);
+                    } else if (activityType == 'deletion') {
+                        data = item.weeks.map(data => data.d);
+                    }
+
+                    series.push({
+                        contributor: author,
+                        data: data,
+                        dates: dates
                     });
-                    setSeriesData(series);
-                } else if (activityType == 'addition') {
-                    var series = [];
-                    response.data.forEach(function (item) {
-                        var dates = item.weeks.map(data => new Date(data.w * 1000));
-                        var additions = item.weeks.map(data => data.a);
-                        var author = item.author.login;
-                        series.push({
-                            contributor: author,
-                            data: additions,
-                            dates: dates
-                        });
-                    });
-                    setSeriesData(series);
-                } else if (activityType == 'deletion') {
-                    var series = [];
-                    response.data.forEach(function (item) {
-                        var dates = item.weeks.map(data => new Date(data.w * 1000));
-                        var deletions = item.weeks.map(data => data.d);
-                        var author = item.author.login;
-                        series.push({
-                            contributor: author,
-                            data: deletions,
-                            dates: dates
-                        });
-                    });
-                    setSeriesData(series);
-                }
+                });
+
+                setSeriesData(series);
             }
         } catch (error) {
             console.error('Error:', error);
@@ -87,14 +70,14 @@ const ContributorChart = ({ repository, activityType }) => {
                 <Loading />
                 :
                 <>
-                    {seriesData.length > 0 ? (
+                    {seriesData?.length > 0 ? (
                         <HighchartsReact
                             highcharts={Highcharts}
                             options={options}
                         />
                     ) : (
                         <div className='m-6'>
-                              Contributor commits no record found.
+                            No contributor commits found for this repository.
                         </div>
                     )}
                 </>

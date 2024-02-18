@@ -8,16 +8,15 @@ const repositorySlice = createSlice({
     name: 'repository',
     initialState,
     reducers: {
-        store: (state,action) => {
-         console.log('action', action);
+        setRepositories: (state, action) => {
+            state.repositories = action.payload;
         },
-        decrement: state => state - 1,
     },
 });
 
-export const { increment, decrement } = repositorySlice.actions;
+export const { setRepositories } = repositorySlice.actions;
 
-export const repositorySelector = (state) => state.repositories;
+export const repositorySelector = (state) => state.repository;
 
 const repositoryReducer = repositorySlice.reducer;
 

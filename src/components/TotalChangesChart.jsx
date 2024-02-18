@@ -5,35 +5,33 @@ import React, { useState, useEffect } from 'react';
 import HighchartsReact from 'highcharts-react-official';
 
 const TotalChangesChart = ({ repository, activityType }) => {
-    console.log('activityType', activityType);
     const [seriesData, setSeriesData] = useState([]);
     const [weekDates, setWeekDates] = useState([]);
-
     const [loading, setLoading] = useState(false);
+    
     const getCommitActivity = async () => {
         setLoading(true);
         try {
             let url = `https://api.github.com/repos/${repository?.full_name}/stats/${activityType == 'commit' ? 'commit_activity' : 'code_frequency '}`;
             const response = await axios.get(url);
 
-            if (response?.data && response?.data.length > 0) {
+            if (response?.data && response?.data?.length > 0) {
+                let weeks;
+                let seriesData = [];
                 if (activityType == 'commit') {
-                    const weeks = response.data.map(entry => new Date(entry.week * 1000));
-                    const counts = response.data.map(entry => entry.total);
-                    setSeriesData(counts);
-                    setWeekDates(weeks);
+                    weeks = response.data.map(entry => new Date(entry.week * 1000));
+                    seriesData = response.data.map(entry => entry.total);
                 } else if (activityType == 'addition') {
-                    const weeks = response?.data.map(entry => new Date(entry[0] * 1000));
-                    const Addition = response?.data.map(entry => entry[1]);
-                    setSeriesData(Addition);
-                    setWeekDates(weeks);
+                    weeks = response?.data.map(entry => new Date(entry[0] * 1000));
+                    seriesData = response?.data.map(entry => entry[1]);
                 } else if (activityType == 'deletion') {
-                    const weeks = response?.data.map(entry => new Date(entry[0] * 1000));
-                    const Deletion = response?.data.map(entry => entry[2]);
-                    setSeriesData(Deletion);
-                    setWeekDates(weeks);
+                    weeks = response?.data.map(entry => new Date(entry[0] * 1000));
+                    seriesData = response?.data.map(entry => entry[2]);
                 }
+                setSeriesData(seriesData);
+                setWeekDates(weeks);
             }
+
         } catch (error) {
             console.error('Error:', error);
         }
@@ -68,14 +66,14 @@ const TotalChangesChart = ({ repository, activityType }) => {
                 <Loading />
                 :
                 <>
-                    {seriesData.length > 0 ? (
+                    {seriesData?.length > 0 ? (
                         <HighchartsReact
                             highcharts={Highcharts}
                             options={options}
                         />
                     ) : (
                         <div className='m-6'>
-                            Total commits no record found.
+                            No total commits found for this repository.
                         </div>
                     )}
                 </>

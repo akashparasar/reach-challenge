@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 import repositoryReducer from './repositorySlice'
 
 const rootReducer = combineReducers({
-  counter: repositoryReducer,
+  repository: repositoryReducer,
 });
 
 export default rootReducer;

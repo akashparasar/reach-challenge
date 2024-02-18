@@ -2,9 +2,14 @@ import React, { useEffect, useState } from "react";
 import RepositoryList from "./components/RepositoryList";
 import Loading from "./components/Loading";
 import axios from "axios";
+import { repositorySelector, setRepositories } from "./store/slices/repositorySlice";
+import { useSelector, useDispatch } from 'react-redux';
 
 const App = () => {
-  
+
+  const { repositories } = useSelector(repositorySelector);
+  const dispatch = useDispatch();
+
   // Filter Date
   var currentDate = new Date();
   const lastWeekDate = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -12,10 +17,9 @@ const App = () => {
   const lastMonthkDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, currentDate.getMonth()).toISOString().slice(0, 10);
   const lastTwoMonthkDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, currentDate.getMonth()).toISOString().slice(0, 10);
 
-  
+
   const [currPage, setCurrPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [repositories, setRepositories] = useState([]);
   const [filterDate, setFilterDate] = useState(lastTwoMonthkDate);
 
   const getRepositories = async (page, date) => {
@@ -23,7 +27,7 @@ const App = () => {
     try {
       let url = `https://api.github.com/search/repositories?q=created:>${date}&sort=stars&order=desc&page=${page}`;
       const response = await axios.get(url);
-      setRepositories(prevRepositories => [...prevRepositories, ...response?.data?.items]);
+      dispatch(setRepositories(page === 1 ? response?.data?.items : [...repositories, ...response?.data?.items]));
     } catch (error) {
       console.error('Error:', error);
     }
@@ -31,7 +35,7 @@ const App = () => {
   }
 
   useEffect(() => {
-    getRepositories(currPage, filterDate);
+    getRepositories(currPage, filterDate,);
   }, [currPage]);
 
   const handleScroll = () => {
@@ -47,8 +51,7 @@ const App = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleDateChange = async (e) => {
-    setRepositories([]);
+  const handleDateChange = (e) => {
     setFilterDate(e.target.value);
     getRepositories(1, e.target.value);
   }
